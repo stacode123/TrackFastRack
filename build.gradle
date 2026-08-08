@@ -1,0 +1,93 @@
+plugins {
+    id("java")
+    id("net.neoforged.moddev.legacyforge") version "2.0.107"
+}
+
+base {
+    archivesName = "trackfastrack"
+    group = "dev.stacode.trackfastrack"
+    version = mod_version
+}
+
+mixin {
+    add(sourceSets.main, "trackfastrack.mixins.json")
+    config "trackfastrack.mixins.json"
+}
+
+legacyForge {
+    version = "$minecraft_version-$forge_version"
+
+    parchment {
+        minecraftVersion = minecraft_version
+        mappingsVersion = parchment_version
+    }
+
+    mods {
+        trackfastrack {
+            sourceSet(sourceSets.main)
+        }
+    }
+
+    runs {
+        configureEach {
+            systemProperty("forge.logging.markers", "")
+            systemProperty("forge.logging.console.level", "info")
+            jvmArguments = ["-XX:+IgnoreUnrecognizedVMOptions", "-XX:+AllowEnhancedClassRedefinition"]
+            systemProperty("mixin.debug.export", "true")
+            systemProperty("mixin.debug.verbose", "true")
+            programArgument("-mixin.config=trackfastrack.mixins.json")
+        }
+
+        client {
+            client()
+            gameDirectory = project.file("run")
+        }
+
+        server {
+            server()
+            gameDirectory = project.file("run/server")
+        }
+    }
+}
+
+repositories {
+    maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    // Create's maven publishes a pom-packaged artifact; addons must select the
+    // self-contained "all" jar (Create + bundled Registrate/Flywheel/Ponder).
+    modImplementation("com.simibubi.create:create-1.20.1:${create_version}:all")
+    // Ponder bundles Catnip at the version Create 6.0.8 expects (net.createmod.catnip.data.Pair),
+    // which Create's train code uses for the splitSubGraphs parameter. Needed to compile the mixin.
+    modImplementation("net.createmod.ponder:Ponder-Forge-1.20.1:1.0.91")
+
+    // Mixin annotation processor for refmap generation
+    annotationProcessor("org.spongepowered:mixin:${mixin_version}:processor")
+    compileOnly("org.spongepowered:mixin:${mixin_version}")
+}
+
+processResources {
+    var replaceProperties = [
+        mod_id         : mod_id,
+        mod_name       : mod_name,
+        mod_author     : mod_author,
+        mod_description: mod_description,
+        mod_license    : mod_license,
+    ]
+    replaceProperties.put("file", [jarVersion: project.version])
+
+    filesMatching(["META-INF/mods.toml"]) {
+        expand(replaceProperties)
+    }
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    manifest.attributes([
+        "MixinConfigs": "trackfastrack.mixins.json"
+    ])
+}

@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.stacode.trackfastrack.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "trackfastrack.refmap.json",
+  "mixins": [
+    "TrackGraphMixin",
+    "TrackPropagatorMixin",
+    "GlobalRailwayManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
